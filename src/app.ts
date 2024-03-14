@@ -46,23 +46,64 @@ const purgeNumbers = purge<number>;
 console.log(purgeNumbers(numberArray));
 // console.log(purgeNumbers(stringArray)); // Викликає помилку тому що ми явно вказали дженерик number
 
-class Shelf<T> {
+interface ItemBook {
+    title: string;
+    id: number;
+    author: string;
+}
+
+class Shelf<T extends ItemBook> {
     private items: T[] = [];
 
     add(item: T): void {
         this.items.push(item);
     }
-
     getFirst(): T {
         return this.items[0];
     }
+    printTitles(): void {
+        this.items.forEach((item: T) => {
+            console.log(item.title);
+        });
+    }
+
+    find(searchTerm: string): T | undefined;
+    find(searchTerm: number): T | undefined;
+    find(searchTerm: string | number): T | undefined {
+        if (typeof searchTerm === 'number') {
+            return this.items.find(item => item.id === searchTerm);
+        } else {
+            return this.items.find(item => item.author === searchTerm);
+        }
+    }
 }
 
-const bookShelf = new Shelf<typeof inventory[0]>();
+class ShelfWithoutGenerics {
+    private books: IBook[] = [];
+    private magazines: IMagazine[] = [];
 
-inventory.forEach(book => bookShelf.add(book));
+    addBook(book: IBook): void {
+        this.books.push(book);
+    }
 
-const firstBookTitle = bookShelf.getFirst().title;
+    addMagazine(magazine: IMagazine): void {
+        this.magazines.push(magazine);
+    }
+
+    getFirstBook(): IBook | undefined {
+        return this.books[0];
+    }
+
+    getFirstMagazine(): IMagazine | undefined {
+        return this.magazines[0];
+    }
+}
+
+const bookShelf = new ShelfWithoutGenerics();
+
+inventory.forEach(book => bookShelf.addBook(book));
+
+const firstBookTitle = bookShelf.getFirstBook()?.title;
 
 console.log(`The title of the first book on the shelf is: ${firstBookTitle}`);
 
@@ -72,11 +113,11 @@ const magazines: IMagazine[] = [
     { title: 'Five Points', publisher: 'GSU' }
 ];
 
-const magazineShelf = new Shelf<typeof magazines[0]>();
+const magazineShelf = new ShelfWithoutGenerics();
 
-magazines.forEach(magazine => magazineShelf.add(magazine));
+magazines.forEach(magazine => magazineShelf.addMagazine(magazine));
 
-const firstMagazineTitle = magazineShelf.getFirst().title;
+const firstMagazineTitle = magazineShelf.getFirstMagazine()?.title;
 
 console.log(`The title of the first book on the magazineShelf is: ${firstMagazineTitle}`);
 
